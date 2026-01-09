@@ -1,0 +1,12 @@
+{
+  "output_dir": "screenshots/v2/celio/celio_01_toilets",
+  "file_prefix": "celio",
+  "monitor_index": 0,
+  "rect": {
+    "x": 23,
+    "y": 667,
+    "width": 1589,
+    "height": 385
+  },
+  "hotkey": "F9"
+}

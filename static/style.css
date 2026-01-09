@@ -1,0 +1,348 @@
+:root {
+    --bg-color: #0f0c29;
+    --bg-gradient: linear-gradient(300deg, #0f0c29, #302b63, #24243e);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --accent: #00d2ff;
+    --accent-hover: #3a7bd5;
+    --danger: #ff416c;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-main);
+    background: var(--bg-color);
+    overflow: hidden;
+    height: 100vh;
+}
+
+.background-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-gradient);
+    z-index: -1;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    gap: 20px;
+}
+
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 300px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.logo h2 {
+    font-weight: 600;
+    letter-spacing: 1px;
+    background: linear-gradient(to right, var(--accent), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.nav-links a:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-links a.active {
+    color: #fff;
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+
+select,
+input[type="text"] {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--glass-border);
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    padding-right: 48px;
+    cursor: pointer;
+}
+
+select:hover,
+input[type="text"]:hover {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: var(--accent);
+}
+
+select:focus,
+input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.1);
+}
+
+select option {
+    background-color: #1a1a2e;
+    color: white;
+    padding: 12px;
+}
+
+input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+}
+
+.actions {
+    margin-top: auto;
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.2s;
+}
+
+.btn.primary {
+    background: var(--accent);
+    color: #000;
+}
+
+.btn.primary:hover {
+    background: var(--accent-hover);
+    color: #fff;
+}
+
+.btn.danger {
+    background: var(--danger);
+    color: #fff;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+    /* Ensure full height usage */
+    overflow: hidden;
+    /* Prevent body scroll */
+}
+
+.preview-section {
+    flex: 1;
+    /* Take available space, but allow shrinking if log grows? Actually allow equal split or fixed ratio */
+    min-height: 40%;
+    /* Minimum height for image */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.image-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.data-section {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Container fixed */
+}
+
+.log-container {
+    flex: 1;
+    overflow-y: auto;
+    /* Enable scroll */
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column-reverse;
+    /* Newest at bottom visually? Wait, normal log is top to bottom. User said "idzie w górę", so appending to bottom. Standard column is fine. */
+    flex-direction: column;
+    gap: 10px;
+}
+
+.log-entry {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 10px;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+    animation: fadeIn 0.3s ease;
+}
+
+.speaker {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9em;
+    margin-bottom: 4px;
+}
+
+.text {
+    font-size: 1.1em;
+    line-height: 1.4;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    body {
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .app-container {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-height: none;
+        padding: 15px;
+    }
+
+    .main-content {
+        height: auto;
+        min-height: 80vh;
+        overflow: visible;
+        /* Let page scroll */
+    }
+
+    .preview-section {
+        min-height: 300px;
+        flex: none;
+        /* Fixed height on mobile usually better or auto */
+    }
+
+    .data-section {
+        min-height: 400px;
+        flex: none;
+        overflow: visible;
+    }
+
+    .log-container {
+        /* On mobile, we might want fixed height scroll for logs to avoid infinite page */
+        height: 400px;
+        overflow-y: auto;
+    }
+
+    .actions {
+        flex-wrap: wrap;
+    }
+}

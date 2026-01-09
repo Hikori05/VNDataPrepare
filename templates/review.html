@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VN Data Review</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Specific overrides for review page */
+        .preview-section {
+            flex: 3;
+        }
+
+        .edit-section {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        textarea {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+            outline: none;
+            resize: vertical;
+            min-height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-blur"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass">
+            <div class="logo">
+                <h2>VN.Review</h2>
+            </div>
+
+            <nav class="nav-links">
+                <a href="/">Processing</a>
+                <a href="/review" class="active">Review Tool</a>
+            </nav>
+
+            <div class="control-group">
+                <label>Screenshots Folder</label>
+                <select id="imgFolderSelect">
+                    <option value="" disabled selected>Loading...</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Conversation JSON</label>
+                <select id="jsonFileSelect">
+                    <option value="" disabled selected>Loading...</option>
+                </select>
+            </div>
+
+            <div class="actions">
+                <button id="loadBtn" class="btn primary">Load Session</button>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center; color: var(--text-muted); font-size: 0.9em;">
+                Use Left/Right Arrows to navigate.<br>
+                Ctrl+S to save manually.
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Image Preview -->
+            <div class="preview-section glass">
+                <div class="image-container">
+                    <img id="currentImage" src="" alt="Select session to load" style="display: none;">
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="edit-section glass">
+                <div class="form-group">
+                    <label>Speaker</label>
+                    <input type="text" id="speakerInput">
+                </div>
+                <div class="form-group">
+                    <label>Text</label>
+                    <textarea id="textInput"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button id="insertBtn" class="btn secondary">Insert Before</button>
+                    <button id="deleteBtn" class="btn danger">Delete Entry</button>
+                </div>
+
+                <div class="nav-controls">
+                    <button id="prevBtn" class="btn">Previous (←)</button>
+                    <span id="indexDisplay">0 / 0</span>
+                    <button id="nextBtn" class="btn">Next (→)</button>
+                </div>
+                <button id="saveBtn" class="btn primary" style="margin-top: 10px;">Save Changes</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/review.js"></script>
+</body>
+
+</html>

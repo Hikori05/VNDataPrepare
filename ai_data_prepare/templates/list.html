@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/assets/style.css?v=2">
+  <title>Title</title>
+</head>
+
+<body>
+
+  <nav>
+    {{ range .Nav }}
+    <a href="{{.Link}}">{{.Name}}</a>
+    {{end}}
+  </nav>
+
+  <div class="card">
+    <h2>Podgląd pliku data.jsonl</h2>
+    {{range .Entries}}
+    <div class="entry">{{.}}</div>
+    {{else}}
+    <p>Plik jest pusty lub nie istnieje.</p>
+    {{end}}
+  </div>
+</body>
+
+</html>

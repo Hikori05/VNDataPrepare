@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css?v=2">
+    <title>Dataset</title>
+</head>
+
+<body>
+    <nav>
+        {{ range .Nav }}
+        <a href="{{.Link}}">{{.Name}}</a>
+        {{end}}
+    </nav>
+
+    <div class="card">
+        <h2>Dodaj dane treningowe</h2>
+        <form action="/save" method="POST">
+            <label for="sys">SYSTEM:</label>
+            <select name="system" id="sys">
+                {{range $key, $value := .PromptSystemsOptions}}
+                <option value="{{$key}}">{{$key}} (podgląd: {{$value}})</option>
+                {{end}}
+            </select>
+            <br>
+            <label>USER:</label>
+            <textarea name="user" placeholder="Wpisz treść od użytkownika..." required></textarea>
+
+            <label>ASSISTANT:</label>
+            <textarea name="assistant" placeholder="Wpisz odpowiedź modelu..." required></textarea>
+
+            <button type="submit">ZAPISZ DO PLIKU</button>
+        </form>
+    </div>
+</body>
+
+</html>
