@@ -1,12 +1,20 @@
 {
-  "output_dir": "screenshots/v2/celio/celio_01_toilets",
-  "file_prefix": "celio",
+  "output_dir": "screenshots/v2/baten/baten_01_scene",
+  "file_prefix": "baten",
   "monitor_index": 0,
   "rect": {
-    "x": 23,
-    "y": 667,
-    "width": 1589,
-    "height": 385
+    "x": 553,
+    "y": 964,
+    "width": 1615,
+    "height": 415
   },
-  "hotkey": "F9"
+  "hotkey": "F9",
+  "roi_presets": {
+    "my_game": {
+      "x": 553,
+      "y": 964,
+      "w": 1615,
+      "h": 415
+    }
+  }
 }

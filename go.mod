@@ -83,6 +83,7 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
 	go.uber.org/mock v0.5.0 // indirect
+	gocv.io/x/gocv v0.43.0 // indirect
 	golang.design/x/mainthread v0.3.0 // indirect
 	golang.org/x/arch v0.20.0 // indirect
 	golang.org/x/crypto v0.44.0 // indirect

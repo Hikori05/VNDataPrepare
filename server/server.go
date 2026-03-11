@@ -550,27 +550,121 @@ func processImage(path string, resizeFactor float64, aiBackend string, modelID s
 		return &ConversationEntry{Speaker: "", Text: ""}, nil
 	}
 
-	lines := strings.Split(content, "\n")
+	var cleanedContent string
+	if strings.HasPrefix(strings.ToLower(modelID), "glm-ocr") {
+		// GLM-OCR might output text enclosed in markdown code blocks like ```markdown \n ... \n ```
+		cleanedContent = strings.TrimSpace(content)
+		if strings.HasPrefix(cleanedContent, "```") {
+			lines := strings.Split(cleanedContent, "\n")
+			if len(lines) > 2 {
+				// Remove the first and last line (which are the markdown fences)
+				cleanedContent = strings.Join(lines[1:len(lines)-1], "\n")
+			}
+		}
+	} else {
+		cleanedContent = content
+	}
+
+	lines := strings.Split(strings.TrimSpace(cleanedContent), "\n")
 	var speaker, text string
 
-	if len(lines) == 1 {
-		text = lines[0]
-		speaker = ""
+	if strings.HasPrefix(strings.ToLower(modelID), "glm-ocr") {
+		// Heuristics for GLM-OCR since we only use "Text Recognition:" prompt
+		if len(lines) > 1 {
+			firstLine := strings.TrimSpace(lines[0])
+			isSpeaker := true
+
+			// If it's too long, it's probably dialogue
+			if len(firstLine) > 30 {
+				isSpeaker = false
+			}
+			// If it starts with quotes or parentheses, it's dialogue
+			if strings.HasPrefix(firstLine, "\"") || strings.HasPrefix(firstLine, "(") || strings.HasPrefix(firstLine, "“") || strings.HasPrefix(firstLine, "「") {
+				isSpeaker = false
+			}
+			// If it ends with sentence punctuation, it's dialogue
+			if strings.HasSuffix(firstLine, ".") || strings.HasSuffix(firstLine, "!") || strings.HasSuffix(firstLine, "?") || strings.HasSuffix(firstLine, "\"") || strings.HasSuffix(firstLine, "”") || strings.HasSuffix(firstLine, "」") {
+				isSpeaker = false
+			}
+
+			if isSpeaker {
+				speaker = firstLine
+				text = strings.Join(lines[1:], "\n")
+			} else {
+				speaker = "Unknown"
+				text = strings.Join(lines, "\n")
+			}
+		} else {
+			speaker = "Unknown"
+			text = lines[0]
+		}
+
+		log.Printf("=== GLM-OCR RAW ===\n%s\n===================", cleanedContent)
+		log.Printf("Heuristic parsed -> Speaker: [%s], Text: [%s]", speaker, text)
+
+		if speaker == "???" || speaker == "" {
+			speaker = "Unknown"
+		}
+
+		// Clean up some known GLM-OCR emoji hallucinations
+		text = strings.ReplaceAll(text, "🐺", "")
+		text = strings.ReplaceAll(text, "♂", "")
+		text = strings.ReplaceAll(text, "♀", "")
 	} else {
-		speaker = strings.TrimSpace(lines[0])
-		text = strings.TrimSpace(strings.Join(lines[1:], "\n"))
+		if len(lines) == 1 {
+			text = lines[0]
+			speaker = ""
+		} else {
+			speaker = strings.TrimSpace(lines[0])
+			text = strings.TrimSpace(strings.Join(lines[1:], "\n"))
+		}
+	}
+
+	// Clean up surrounding quotes from text
+	text = strings.TrimSpace(text)
+	if strings.HasPrefix(text, "\"") && strings.HasSuffix(text, "\"") {
+		text = strings.TrimSuffix(strings.TrimPrefix(text, "\""), "\"")
+	} else if strings.HasPrefix(text, "“") && strings.HasSuffix(text, "”") {
+		text = strings.TrimSuffix(strings.TrimPrefix(text, "“"), "”")
+	} else if strings.HasPrefix(text, "「") && strings.HasSuffix(text, "」") {
+		text = strings.TrimSuffix(strings.TrimPrefix(text, "「"), "」")
 	}
 
 	return &ConversationEntry{
 		Speaker: speaker,
-		Text:    text,
+		Text:    strings.TrimSpace(text),
 	}, nil
 }
 
 func callLMStudio(encodedImage string, modelID string) (string, error) {
-	payload := map[string]interface{}{
-		"model": "local-model", // LM Studio default
-		"messages": []interface{}{
+	var messages []interface{}
+
+	if strings.HasPrefix(strings.ToLower(modelID), "glm-ocr") {
+		// For GLM-OCR, rule 10 causes hallucinations, so we append an instruction to ignore it
+		glmPrompt := SystemPrompt + "\nCRITICAL FOR GLM-OCR: Ignore rule 10. Just output the speaker name on line 1 and dialogue on line 2. Do NOT say 'Wait, the prompt says...'"
+		messages = []interface{}{
+			map[string]interface{}{
+				"role":    "system",
+				"content": glmPrompt,
+			},
+			map[string]interface{}{
+				"role": "user",
+				"content": []interface{}{
+					map[string]interface{}{
+						"type": "text",
+						"text": "Extract conversation.",
+					},
+					map[string]interface{}{
+						"type": "image_url",
+						"image_url": map[string]string{
+							"url": fmt.Sprintf("data:image/jpeg;base64,%s", encodedImage),
+						},
+					},
+				},
+			},
+		}
+	} else {
+		messages = []interface{}{
 			map[string]interface{}{
 				"role":    "system",
 				"content": SystemPrompt,
@@ -590,7 +684,12 @@ func callLMStudio(encodedImage string, modelID string) (string, error) {
 					},
 				},
 			},
-		},
+		}
+	}
+
+	payload := map[string]interface{}{
+		"model":       modelID, // Make sure modelID is passed, not generic "local-model"
+		"messages":    messages,
 		"max_tokens":  500,
 		"temperature": 0.1,
 	}
@@ -599,7 +698,7 @@ func callLMStudio(encodedImage string, modelID string) (string, error) {
 	req, _ := http.NewRequest("POST", LMStudioURL, bytes.NewBuffer(jsonPayload))
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{Timeout: 60 * time.Second}
+	client := &http.Client{Timeout: 300 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -628,9 +727,23 @@ func callOllama(encodedImage string, modelID string) (string, error) {
 		modelID = "gemma:latest" // Default fallback
 	}
 
-	payload := map[string]interface{}{
-		"model": modelID,
-		"messages": []interface{}{
+	var messages []interface{}
+
+	if strings.HasPrefix(strings.ToLower(modelID), "glm-ocr") {
+		glmPrompt := SystemPrompt + "\nCRITICAL FOR GLM-OCR: Ignore rule 10. Just output the speaker name on line 1 and dialogue on line 2. Do NOT say 'Wait, the prompt says...'"
+		messages = []interface{}{
+			map[string]interface{}{
+				"role":    "system",
+				"content": glmPrompt,
+			},
+			map[string]interface{}{
+				"role":    "user",
+				"content": "Extract conversation.",
+				"images":  []string{encodedImage},
+			},
+		}
+	} else {
+		messages = []interface{}{
 			map[string]interface{}{
 				"role":    "system",
 				"content": SystemPrompt,
@@ -640,7 +753,12 @@ func callOllama(encodedImage string, modelID string) (string, error) {
 				"content": "Extract conversation.",
 				"images":  []string{encodedImage},
 			},
-		},
+		}
+	}
+
+	payload := map[string]interface{}{
+		"model":    modelID,
+		"messages": messages,
 		"options": map[string]interface{}{
 			"num_gpu":     999, // Force GPU usage
 			"temperature": 0.1,
@@ -652,7 +770,7 @@ func callOllama(encodedImage string, modelID string) (string, error) {
 	req, _ := http.NewRequest("POST", OllamaURL, bytes.NewBuffer(jsonPayload))
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{Timeout: 60 * time.Second}
+	client := &http.Client{Timeout: 300 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -51,11 +52,10 @@ type model struct {
 func initialModel() model {
 	return model{
 		items: []item{
-			{title: "Start Capture UI (Old)", path: "capture_ui_old/capture_ui_old.exe", desc: "Legacy Windows Interface (Default)"},
-			{title: "Start Capture UI (Fyne)", path: "capture_ui/capture_ui.exe", desc: "Modern UI (Fyne)"},
-			{title: "Start Capture Auto", path: "capture_auto/capture_auto.exe", desc: "Background Auto Capture"},
-			{title: "Start Server", path: "server/server.exe", desc: "Backend API & Processing"},
-			{title: "Start AI Data Prepare", path: "ai_data_prepare/ai_data_prepare.exe", desc: "Preparing AI Data"},
+			{title: "Start Capture Desktop (Fyne)", path: "capture_ui/capture_ui.exe", desc: "Live Screen Capture"},
+			{title: "Start Video Extractor (AI)", path: "video_extractor/video_extractor.exe", desc: "Extract Frames from Video (Pure Go)"},
+			{title: "Start Video Extractor Python", path: "video_extractor/run_extractor.bat", desc: "Extract Frames from Video (Python Alternate)"},
+			{title: "Start Server", path: "server/server.exe", desc: "Backend API & UI"},
 			{title: "Exit", path: "", desc: "Close Launcher"},
 		},
 		cursor: 0,
@@ -107,7 +107,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func launchApp(i item) tea.Cmd {
 	return func() tea.Msg {
 		// Use 'cmd /c start' to detach and spawn in new window/process
-		cmd := exec.Command("cmd", "/c", "start", "", i.path)
+		// Windows 'start' command can interpret the first quoted string as a title.
+		// To fix the pathing issue we use filepath.FromSlash to ensure windows backslashes
+		cleanPath := filepath.FromSlash(i.path)
+		
+		cmd := exec.Command("cmd", "/c", "start", "", cleanPath)
 		err := cmd.Start()
 
 		status := fmt.Sprintf("Launched %s!", i.title)
